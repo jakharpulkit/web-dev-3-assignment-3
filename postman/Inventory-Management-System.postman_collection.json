@@ -1,0 +1,86 @@
+{
+  "info": {
+    "name": "Inventory Management System - Lab 3",
+    "description": "Postman requests for all Lab 3 inventory API endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Gel Pen Pack of 15\",\n  \"sku\": \"STNY-PN-713\",\n  \"category\": \"Stationery\",\n  \"price\": 120,\n  \"quantity\": 40,\n  \"reorderLevel\": 20,\n  \"supplier\": \"Cello Pens\"\n}" },
+        "url": "{{baseUrl}}/api/products"
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+          "const data = pm.response.json();",
+          "pm.collectionVariables.set('productId', data._id);",
+          "pm.test('Stock value is calculated', function () { pm.expect(data.stockValue).to.eql(data.price * data.quantity); });"
+        ] }
+      }]
+    },
+    {
+      "name": "Get All Products",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products?page=1&limit=10" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });", "pm.test('Products array exists', function () { pm.expect(pm.response.json().products).to.be.an('array'); });"] } }]
+    },
+    {
+      "name": "Filter by Category and Search",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products?category=Stationery&search=Gel" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "Sort Products",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products?sort=-price" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "Get Single Product",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/{{productId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "Update Product",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"price\": 140,\n  \"quantity\": 60\n}" },
+        "url": "{{baseUrl}}/api/products/{{productId}}"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "Increase Stock",
+      "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"change\": 10\n}" }, "url": "{{baseUrl}}/api/products/{{productId}}/stock" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "Decrease Stock",
+      "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"change\": -5\n}" }, "url": "{{baseUrl}}/api/products/{{productId}}/stock" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }]
+    },
+    {
+      "name": "Low Stock Report",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/low-stock" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });", "pm.test('Low stock list exists', function () { pm.expect(pm.response.json().lowStockItems).to.be.an('array'); });"] } }]
+    },
+    {
+      "name": "Category Summary",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/summary" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });", "pm.test('Summary list exists', function () { pm.expect(pm.response.json().summary).to.be.an('array'); });"] } }]
+    },
+    {
+      "name": "Delete Product",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/api/products/{{productId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status is 200', function () { pm.response.to.have.status(200); });"] } }]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "productId", "value": "" }
+  ]
+}
